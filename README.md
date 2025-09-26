@@ -1,3 +1,9 @@
-# gemini_app
+# Gemini App
 
-A new Flutter project.
+## Dev
+
+1. Ejecutar el comando de:
+
+```dart
+dart run build_runner watch -d
+```
