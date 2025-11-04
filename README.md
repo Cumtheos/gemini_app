@@ -5,8 +5,6 @@
 1. Clonar el archiivo `.env.template` y renombrarlo a `.env` y completar los valores necesarios.
 
 
-
-
 2. Ejecutar el comando de:
 
 ```dart
