@@ -21,7 +21,6 @@ class BasicPromptScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('Prompt Básico'), centerTitle: true,),
       body: Chat(
         messages: chatMessages,
-
         // On Send Message
         onSendPressed: (types.PartialText partialText) {
           //pertmite tener la instancia para obtener las funciones
