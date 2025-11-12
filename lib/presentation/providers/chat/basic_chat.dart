@@ -12,12 +12,14 @@ final uuid = Uuid();
 
 @riverpod
 class BasicChat extends _$BasicChat {
-
   final gemini = GeminiImpl();
+  // asi evitamos leer el provider en cada mensaje
+  late User geminiUser;
 
   //estado de listado de mensajes
   @override
   List<Message> build() {
+    geminiUser = ref.read(geminiUserProvider);
     return [];
   }
 
@@ -27,38 +29,38 @@ class BasicChat extends _$BasicChat {
   }
 
   void _addTextMessage(PartialText partialText, User author) {
-    final message = TextMessage(
-      id: uuid.v4(),
-      author: author,
-      text: partialText.text,
-      createdAt: DateTime.now().millisecondsSinceEpoch,
-    );
-
-    //añade el mensaje al inicio de la lista
-    state = [message, ...state];
+    _createTextMessage(partialText.text, author);
     // se llama a geminiimpl
     _geminiTextResponse(partialText.text);
   }
 
   void _geminiTextResponse(String prompt) async {
-    final isGeminiWriting = ref.read(isGeminiWritingProvider.notifier);
-    final geminiUser = ref.read(geminiUserProvider);
+    _setGeminiWritingStatus(true);
 
-    isGeminiWriting.setIsWriting();
     // await Future.delayed(Duration(seconds: 2));
     final textResponse = await gemini.getResponse(prompt);
 
+    _createTextMessage(textResponse, geminiUser);
+
+    _setGeminiWritingStatus(false);
+  }
+
+  // Helper methods
+
+  void _setGeminiWritingStatus(bool isWriting) {
+    final isGeminiWriting = ref.read(isGeminiWritingProvider.notifier);
+    isWriting
+        ? isGeminiWriting.setIsWriting()
+        : isGeminiWriting.setIsNotWriting();
+  }
+
+  void _createTextMessage(String text, User author) {
     final message = TextMessage(
       id: uuid.v4(),
-      author: geminiUser,
-      // text: 'Hola Mundo desde geminini: $prompt',
-      text: textResponse,
+      author: author,
+      text: text,
       createdAt: DateTime.now().millisecondsSinceEpoch,
     );
-
-    //añade el mensaje al inicio de la lista
     state = [message, ...state];
-
-    isGeminiWriting.setIsNotWriting();
   }
 }
