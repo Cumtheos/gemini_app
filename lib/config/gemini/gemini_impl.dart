@@ -30,4 +30,45 @@ class GeminiImpl {
       throw Exception('Error al obtener respuesta de Gemini');
     }
   }
+
+
+  Stream<String> getResponseStream(String prompt) async* {
+    // se debe utilizar un listener para manejar el stream por eso se utiliza un async*
+    try {
+      // Todo: Tener presente que enviaremos imagenes
+      //! Multipart request
+
+      final body = jsonEncode({'prompt': prompt});
+      //jsonEnconde es para convertir un mapa a un string json
+      final response = await _http.post(
+        '/basic-prompt-stream', 
+        data: body, 
+        options: Options(
+          responseType: ResponseType.stream,
+        ));
+
+      // esta parte es para manejar el stream de datos
+      final stream = response.data.stream as Stream<List<int>>;
+
+      // buffer para almacenar los datos recibidos
+      String buffer = '';
+      
+      await for (var chunk in stream){
+        // decodificar el chunk recibido
+        final chunkString = utf8.decode(chunk, allowMalformed: true);
+        // se contaena al buffer
+        buffer += chunkString;
+
+        // no se usa return porque es un stream
+        // se usa yield para emitir datos parciales
+        yield buffer;
+      }
+
+      print(response.data);
+      // return response.data;
+    } catch (e) {
+      print(e);
+      throw Exception('Error al obtener respuesta de Gemini');
+    }
+  }
 }
